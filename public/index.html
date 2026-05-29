@@ -131,7 +131,7 @@
               <div class="empty-video" id="remoteEmpty">
                 <span class="radar"></span>
                 <strong>Собеседник появится здесь</strong>
-                <small>Выбери темы и нажми “Подключиться”.</small>
+          <small>Нажми “Начать”, разреши камеру и дождись подключения.</small>
               </div>
               <div class="frame-label">
                 <span class="live-dot muted" id="remoteDot"></span>
@@ -142,7 +142,7 @@
             <div class="local-frame video-frame">
               <video id="localVideo" autoplay muted playsinline></video>
               <div class="empty-video compact-empty" id="localEmpty">
-                <strong>Камера выключена</strong>
+                <strong>Превью камеры</strong>
               </div>
               <div class="frame-label">
                 <span class="live-dot muted" id="localDot"></span>
@@ -152,12 +152,12 @@
           </div>
 
           <div class="call-controls" aria-label="Управление звонком">
-            <button class="control-button" id="enableMediaButton" type="button" title="Включить камеру и микрофон">
+            <button class="control-button" id="enableMediaButton" type="button" title="Разрешить доступ к камере и микрофону">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h7A2.5 2.5 0 0 1 16 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 4 16.5v-9Z" />
                 <path d="m16 10 4-2.5v9L16 14" />
               </svg>
-              <span>Камера</span>
+              <span>Доступ</span>
             </button>
 
             <button class="control-button" id="toggleMicButton" type="button" disabled title="Микрофон">
@@ -174,7 +174,7 @@
                 <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h6A2.5 2.5 0 0 1 15 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-6A2.5 2.5 0 0 1 4 16.5v-9Z" />
                 <path d="m15 10 5-3v10l-5-3" />
               </svg>
-              <span>Видео</span>
+              <span>Камера</span>
             </button>
 
             <button class="control-button connect" id="connectButton" type="button">
@@ -182,7 +182,7 @@
                 <path d="M7 17 17 7" />
                 <path d="M9 7h8v8" />
               </svg>
-              <span>Подключиться</span>
+              <span>Начать</span>
             </button>
 
             <button class="control-button next" id="nextButton" type="button" disabled title="Следующий собеседник">
@@ -190,7 +190,7 @@
                 <path d="M5 5v14l10-7L5 5Z" />
                 <path d="M19 5v14" />
               </svg>
-              <span>Next</span>
+              <span>Дальше</span>
             </button>
 
             <button class="control-button warning" id="reportButton" type="button" disabled title="Пожаловаться">
@@ -198,7 +198,7 @@
                 <path d="M5 21V5" />
                 <path d="M5 5h13l-2 5 2 5H5" />
               </svg>
-              <span>Report</span>
+              <span>Жалоба</span>
             </button>
 
             <button class="control-button danger" id="endButton" type="button" disabled title="Завершить">

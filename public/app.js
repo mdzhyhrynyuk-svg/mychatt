@@ -45,6 +45,7 @@ let cameraEnabled = true;
 let selectedTags = new Set(["music"]);
 let isMatching = false;
 let connectionTimer = null;
+let pendingCandidates = [];
 
 const iceServers = window.ERMI_ICE_SERVERS || [
   { urls: "stun:stun.l.google.com:19302" },
@@ -147,21 +148,38 @@ async function connectSocket() {
 
   socket.on("offer", async ({ offer }) => {
     if (!peerConnection) return;
-    await peerConnection.setRemoteDescription(offer);
-    const answer = await peerConnection.createAnswer();
-    await peerConnection.setLocalDescription(answer);
-    socket.emit("answer", { roomId, answer });
+    try {
+      await peerConnection.setRemoteDescription(offer);
+      await flushPendingCandidates();
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      socket.emit("answer", { roomId, answer });
+    } catch (error) {
+      handleConnectionProblem(`Ошибка offer: ${error.message}`);
+    }
   });
 
   socket.on("answer", async ({ answer }) => {
-    if (peerConnection) {
+    if (!peerConnection) return;
+    try {
       await peerConnection.setRemoteDescription(answer);
+      await flushPendingCandidates();
+    } catch (error) {
+      handleConnectionProblem(`Ошибка answer: ${error.message}`);
     }
   });
 
   socket.on("ice-candidate", async ({ candidate }) => {
-    if (peerConnection && candidate) {
+    if (!peerConnection || !candidate) return;
+    try {
+      if (!peerConnection.remoteDescription) {
+        pendingCandidates.push(candidate);
+        return;
+      }
+
       await peerConnection.addIceCandidate(candidate);
+    } catch (error) {
+      handleConnectionProblem(`Ошибка ICE: ${error.message}`);
     }
   });
 
@@ -219,7 +237,11 @@ function stopCamera() {
 
 function createPeerConnection() {
   cleanupPeer();
-  peerConnection = new RTCPeerConnection({ iceServers });
+  pendingCandidates = [];
+  peerConnection = new RTCPeerConnection({
+    iceServers,
+    iceCandidatePoolSize: 10
+  });
 
   localStream.getTracks().forEach((track) => {
     peerConnection.addTrack(track, localStream);
@@ -258,15 +280,31 @@ function createPeerConnection() {
     }
 
     if (state === "failed" || state === "disconnected") {
-      connectButton.disabled = false;
-      nextButton.disabled = false;
-      reportButton.disabled = true;
-      stopConnectionTimer();
-      setStatus("Связь не прошла. Нажми Next или попробуй другую сеть", "danger");
-      setRemoteState("Проблема связи", "danger");
-      addSystemMessage("WebRTC не смог соединить браузеры напрямую. Для стабильной связи между разными сетями нужен TURN-сервер.");
+      handleConnectionProblem("Связь не прошла. Нажми “Дальше” или попробуй другую сеть.");
     }
   };
+}
+
+async function flushPendingCandidates() {
+  if (!peerConnection?.remoteDescription || pendingCandidates.length === 0) return;
+
+  const candidates = [...pendingCandidates];
+  pendingCandidates = [];
+
+  for (const candidate of candidates) {
+    await peerConnection.addIceCandidate(candidate);
+  }
+}
+
+function handleConnectionProblem(message) {
+  connectButton.disabled = false;
+  connectButton.querySelector("span").textContent = "Начать";
+  nextButton.disabled = false;
+  reportButton.disabled = true;
+  stopConnectionTimer();
+  setStatus(message, "danger");
+  setRemoteState("Нет связи", "danger");
+  addSystemMessage("Соединение нестабильно. Если тест идет между разными сетями, нужен TURN-сервер.");
 }
 
 async function makeOffer() {
@@ -287,7 +325,7 @@ async function findPartner() {
     await connectSocket();
   } catch (error) {
     connectButton.disabled = false;
-    connectButton.querySelector("span").textContent = "Подключиться";
+    connectButton.querySelector("span").textContent = "Начать";
     endButton.disabled = true;
     throw error;
   }
@@ -327,7 +365,7 @@ function endCall({ stopMedia = true } = {}) {
   remoteVideo.srcObject = null;
   remoteEmpty.hidden = false;
   connectButton.disabled = false;
-  connectButton.querySelector("span").textContent = "Подключиться";
+  connectButton.querySelector("span").textContent = "Начать";
   nextButton.disabled = true;
   reportButton.disabled = true;
   endButton.disabled = true;
@@ -343,6 +381,7 @@ function endCall({ stopMedia = true } = {}) {
 
 function cleanupPeer() {
   stopConnectionTimer();
+  pendingCandidates = [];
   if (!peerConnection) return;
   peerConnection.ontrack = null;
   peerConnection.onicecandidate = null;
@@ -357,9 +396,10 @@ function startConnectionTimer() {
     if (!peerConnection || peerConnection.connectionState === "connected") return;
 
     connectButton.disabled = false;
+    connectButton.querySelector("span").textContent = "Начать";
     nextButton.disabled = false;
     reportButton.disabled = true;
-    setStatus("Соединение не установилось. Нажми Next", "danger");
+    setStatus("Соединение не установилось. Нажми “Дальше”", "danger");
     setRemoteState("Нет связи", "danger");
     addSystemMessage("Соединение не установилось за 18 секунд. Это часто бывает без TURN-сервера.");
   }, 18000);
@@ -416,7 +456,7 @@ function toggleTrack(kind) {
     });
     toggleCameraButton.classList.toggle("is-off", !cameraEnabled);
     localEmpty.hidden = cameraEnabled;
-    toggleCameraButton.querySelector("span").textContent = cameraEnabled ? "Видео" : "Камера off";
+    toggleCameraButton.querySelector("span").textContent = cameraEnabled ? "Камера" : "Камера выкл.";
   }
 }
 
