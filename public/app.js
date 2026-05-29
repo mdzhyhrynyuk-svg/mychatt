@@ -44,8 +44,9 @@ let micEnabled = true;
 let cameraEnabled = true;
 let selectedTags = new Set(["music"]);
 let isMatching = false;
+let connectionTimer = null;
 
-const iceServers = [
+const iceServers = window.ERMI_ICE_SERVERS || [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" }
 ];
@@ -113,6 +114,8 @@ async function connectSocket() {
   });
 
   socket.on("connect_error", (error) => {
+    connectButton.disabled = false;
+    endButton.disabled = true;
     setStatus(`Ошибка сервера: ${error.message}`, "danger");
   });
 
@@ -135,6 +138,7 @@ async function connectSocket() {
     setStatus("Собеседник найден. Создаем звонок", "busy");
     setRemoteState("Подключение", "busy");
     addSystemMessage("Собеседник найден. Начинаем WebRTC-соединение.");
+    startConnectionTimer();
 
     if (isCaller) {
       makeOffer();
@@ -170,6 +174,7 @@ async function connectSocket() {
   });
 
   socket.on("peer-left", () => {
+    stopConnectionTimer();
     remoteVideo.srcObject = null;
     remoteEmpty.hidden = false;
     nextButton.disabled = false;
@@ -221,6 +226,7 @@ function createPeerConnection() {
   });
 
   peerConnection.ontrack = (event) => {
+    stopConnectionTimer();
     remoteVideo.srcObject = event.streams[0];
     remoteEmpty.hidden = true;
     nextButton.disabled = false;
@@ -245,14 +251,20 @@ function createPeerConnection() {
     pingState.textContent = state.toUpperCase();
 
     if (state === "connected") {
+      stopConnectionTimer();
       setStatus("Разговор идет", "");
       setRemoteState("В эфире", "");
       return;
     }
 
     if (state === "failed" || state === "disconnected") {
-      setStatus(`Соединение: ${state}`, "danger");
+      connectButton.disabled = false;
+      nextButton.disabled = false;
+      reportButton.disabled = true;
+      stopConnectionTimer();
+      setStatus("Связь не прошла. Нажми Next или попробуй другую сеть", "danger");
       setRemoteState("Проблема связи", "danger");
+      addSystemMessage("WebRTC не смог соединить браузеры напрямую. Для стабильной связи между разными сетями нужен TURN-сервер.");
     }
   };
 }
@@ -267,8 +279,18 @@ async function makeOffer() {
 
 async function findPartner() {
   showPlatform();
-  await startCamera();
-  await connectSocket();
+  connectButton.disabled = true;
+  connectButton.querySelector("span").textContent = "Ищем...";
+
+  try {
+    await startCamera();
+    await connectSocket();
+  } catch (error) {
+    connectButton.disabled = false;
+    connectButton.querySelector("span").textContent = "Подключиться";
+    endButton.disabled = true;
+    throw error;
+  }
 
   createPeerConnection();
   clearChat();
@@ -276,7 +298,6 @@ async function findPartner() {
     tags: [...selectedTags]
   });
 
-  connectButton.disabled = true;
   nextButton.disabled = true;
   endButton.disabled = false;
   reportButton.disabled = true;
@@ -298,6 +319,7 @@ function nextPartner() {
 }
 
 function endCall({ stopMedia = true } = {}) {
+  stopConnectionTimer();
   socket?.emit("leave-room");
   cleanupPeer();
   roomId = null;
@@ -305,6 +327,7 @@ function endCall({ stopMedia = true } = {}) {
   remoteVideo.srcObject = null;
   remoteEmpty.hidden = false;
   connectButton.disabled = false;
+  connectButton.querySelector("span").textContent = "Подключиться";
   nextButton.disabled = true;
   reportButton.disabled = true;
   endButton.disabled = true;
@@ -319,12 +342,33 @@ function endCall({ stopMedia = true } = {}) {
 }
 
 function cleanupPeer() {
+  stopConnectionTimer();
   if (!peerConnection) return;
   peerConnection.ontrack = null;
   peerConnection.onicecandidate = null;
   peerConnection.onconnectionstatechange = null;
   peerConnection.close();
   peerConnection = null;
+}
+
+function startConnectionTimer() {
+  stopConnectionTimer();
+  connectionTimer = window.setTimeout(() => {
+    if (!peerConnection || peerConnection.connectionState === "connected") return;
+
+    connectButton.disabled = false;
+    nextButton.disabled = false;
+    reportButton.disabled = true;
+    setStatus("Соединение не установилось. Нажми Next", "danger");
+    setRemoteState("Нет связи", "danger");
+    addSystemMessage("Соединение не установилось за 18 секунд. Это часто бывает без TURN-сервера.");
+  }, 18000);
+}
+
+function stopConnectionTimer() {
+  if (!connectionTimer) return;
+  window.clearTimeout(connectionTimer);
+  connectionTimer = null;
 }
 
 function shortRoom(value) {
