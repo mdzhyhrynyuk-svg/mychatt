@@ -1,3 +1,4 @@
+/* ERMI v5 compact interface. If GitHub does not show this line, styles.css is old. */
 :root {
   color-scheme: dark;
   --bg: #100818;
@@ -17,10 +18,10 @@
   --green: #7cf2b3;
   --amber: #f0bb69;
   --danger: #ff5d7d;
-  --shadow: 0 28px 80px rgba(11, 5, 20, 0.46);
-  --radius-sm: 10px;
-  --radius: 18px;
-  --radius-lg: 28px;
+  --shadow: 0 18px 48px rgba(7, 3, 14, 0.34);
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
   --font: "Space Grotesk", "Satoshi", "Outfit", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
@@ -30,16 +31,23 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.video-frame.has-stream .empty-video {
+  display: none !important;
 }
 
 body {
   min-height: 100dvh;
   margin: 0;
   background:
-    radial-gradient(circle at 18% 12%, rgba(141, 92, 246, 0.32), transparent 34rem),
-    radial-gradient(circle at 92% 18%, rgba(231, 95, 154, 0.2), transparent 28rem),
-    linear-gradient(135deg, #0d0715 0%, var(--bg) 44%, #18091f 100%);
+    radial-gradient(circle at 22% 8%, rgba(112, 68, 210, 0.2), transparent 30rem),
+    linear-gradient(135deg, #0d0715 0%, var(--bg) 52%, #14071f 100%);
   color: var(--text);
   font-family: var(--font);
   letter-spacing: 0;
@@ -85,15 +93,7 @@ svg {
 }
 
 .noise {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 20;
-  opacity: 0.04;
-  background-image:
-    linear-gradient(115deg, rgba(255,255,255,0.8) 0 1px, transparent 1px 4px),
-    linear-gradient(25deg, rgba(255,255,255,0.7) 0 1px, transparent 1px 5px);
-  mix-blend-mode: screen;
+  display: none;
 }
 
 .landing {
@@ -103,11 +103,7 @@ svg {
 }
 
 .hero-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.5;
+  display: none;
 }
 
 .topbar,
@@ -136,7 +132,7 @@ svg {
   width: 42px;
   height: 42px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 14px;
+  border-radius: 12px;
   background:
     linear-gradient(145deg, rgba(141, 92, 246, 0.72), rgba(231, 95, 154, 0.28)),
     rgba(255, 255, 255, 0.06);
@@ -185,9 +181,9 @@ svg {
   align-items: center;
   gap: 52px;
   width: min(1180px, calc(100% - 32px));
-  min-height: calc(100dvh - 94px);
+  min-height: auto;
   margin: 0 auto;
-  padding: 54px 0 90px;
+  padding: 52px 0 60px;
 }
 
 .hero-copy {
@@ -212,8 +208,8 @@ p {
 .hero h1 {
   max-width: 760px;
   margin-bottom: 22px;
-  font-size: clamp(44px, 6vw, 82px);
-  line-height: 0.96;
+  font-size: clamp(42px, 5vw, 68px);
+  line-height: 1.02;
   letter-spacing: 0;
 }
 
@@ -238,7 +234,7 @@ p {
   justify-content: center;
   gap: 10px;
   min-height: 48px;
-  border-radius: 999px;
+  border-radius: 12px;
   padding: 0 20px;
   color: var(--text);
   transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), background 180ms ease, border-color 180ms ease;
@@ -252,7 +248,7 @@ p {
 
 .button.primary {
   background: linear-gradient(135deg, var(--violet), var(--rose));
-  box-shadow: 0 16px 44px rgba(111, 67, 214, 0.32);
+  box-shadow: none;
   font-weight: 800;
 }
 
@@ -299,19 +295,13 @@ p {
 }
 
 .hero-visual::before {
-  content: "";
-  position: absolute;
-  inset: 44px -8px 10px 28px;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 42px;
-  background: linear-gradient(145deg, rgba(141, 92, 246, 0.2), rgba(103, 228, 255, 0.08));
-  transform: rotate(3deg);
+  display: none;
 }
 
 .orbital-card {
   position: relative;
   border: 1px solid rgba(255,255,255,0.16);
-  border-radius: 34px;
+  border-radius: 16px;
   background: linear-gradient(160deg, rgba(25, 13, 41, 0.84), rgba(47, 23, 76, 0.72));
   box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.12);
   backdrop-filter: blur(20px);
@@ -321,7 +311,7 @@ p {
   width: min(100%, 470px);
   margin: 44px 0 0 auto;
   padding: 18px;
-  animation: floatCard 8s ease-in-out infinite;
+  animation: none;
 }
 
 .preview-top {
@@ -352,7 +342,7 @@ p {
   place-items: end start;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 26px;
+  border-radius: 14px;
   padding: 18px;
   color: rgba(255,255,255,0.62);
   background:
@@ -372,10 +362,7 @@ p {
 }
 
 .scan-line {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(103,228,255,0.08) 47%, transparent 53%);
-  animation: scan 3.8s linear infinite;
+  display: none;
 }
 
 .preview-controls {
@@ -388,7 +375,7 @@ p {
 .preview-controls span {
   width: 42px;
   height: 42px;
-  border-radius: 50%;
+  border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.08);
 }
@@ -409,7 +396,7 @@ p {
 
 .info-grid article {
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: 14px;
   padding: 24px;
   background: rgba(255,255,255,0.055);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
@@ -437,6 +424,7 @@ p {
 
 .app-shell {
   min-height: 100dvh;
+  overflow: hidden;
   background:
     radial-gradient(circle at 80% 0%, rgba(141,92,246,0.2), transparent 28rem),
     radial-gradient(circle at 8% 90%, rgba(103,228,255,0.12), transparent 28rem),
@@ -456,7 +444,7 @@ p {
   gap: 10px;
   max-width: min(620px, 52vw);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 12px;
   padding: 11px 16px;
   background: rgba(255,255,255,0.06);
   color: var(--muted);
@@ -503,6 +491,7 @@ p {
   width: min(1440px, calc(100% - 32px));
   margin: 0 auto;
   padding: 12px 0 24px;
+  height: calc(100dvh - 92px);
 }
 
 .stage,
@@ -510,12 +499,18 @@ p {
   min-width: 0;
 }
 
+.stage {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
 .video-board {
   position: relative;
   display: grid;
-  min-height: clamp(420px, calc(100dvh - 198px), 760px);
+  min-height: 0;
+  height: 100%;
   border: 1px solid var(--line);
-  border-radius: 30px;
+  border-radius: 16px;
   overflow: hidden;
   background: rgba(18, 9, 28, 0.9);
   box-shadow: var(--shadow);
@@ -527,17 +522,17 @@ p {
 }
 
 .remote-frame {
-  min-height: clamp(420px, calc(100dvh - 198px), 760px);
+  min-height: 0;
 }
 
 .local-frame {
   position: absolute;
   right: 20px;
   bottom: 20px;
-  width: min(260px, 28%);
+  width: min(220px, 26%);
   aspect-ratio: 4 / 3;
   border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 22px;
+  border-radius: 12px;
   background: rgba(255,255,255,0.06);
   box-shadow: 0 20px 60px rgba(0,0,0,0.34);
 }
@@ -559,13 +554,12 @@ video {
   gap: 10px;
   padding: 24px;
   text-align: center;
-  background:
-    radial-gradient(circle at 50% 35%, rgba(141,92,246,0.32), transparent 20rem),
-    linear-gradient(135deg, rgba(18,9,28,0.95), rgba(30,15,48,0.95));
+  background: rgba(18,9,28,0.84);
+  backdrop-filter: blur(2px);
 }
 
 .empty-video strong {
-  font-size: clamp(24px, 3vw, 42px);
+  font-size: clamp(22px, 2.4vw, 34px);
 }
 
 .empty-video small {
@@ -575,13 +569,13 @@ video {
 }
 
 .compact-empty strong {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .radar {
   position: relative;
-  width: 92px;
-  height: 92px;
+  width: 72px;
+  height: 72px;
   margin-bottom: 8px;
   border: 1px solid rgba(103,228,255,0.36);
   border-radius: 50%;
@@ -609,7 +603,7 @@ video {
   align-items: center;
   gap: 10px;
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 999px;
+  border-radius: 10px;
   padding: 8px 12px;
   background: rgba(11,5,20,0.58);
   backdrop-filter: blur(12px);
@@ -620,31 +614,32 @@ video {
 .call-controls {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 14px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .control-button {
-  display: grid;
-  place-items: center;
-  gap: 7px;
-  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 54px;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 12px;
   background: rgba(255,255,255,0.06);
   color: var(--text);
   transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), background 180ms ease, border-color 180ms ease;
 }
 
 .control-button:hover:not(:disabled) {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   border-color: var(--line-strong);
   background: rgba(255,255,255,0.1);
 }
 
 .control-button span {
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 13px;
+  color: inherit;
 }
 
 .control-button.connect {
@@ -673,11 +668,13 @@ video {
   display: grid;
   gap: 14px;
   align-content: start;
+  max-height: 100%;
+  overflow: auto;
 }
 
 .panel-block {
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: 14px;
   padding: 18px;
   background: rgba(255,255,255,0.055);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
@@ -708,7 +705,7 @@ video {
 
 .tag-button {
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 10px;
   padding: 9px 12px;
   background: rgba(255,255,255,0.05);
   color: var(--muted);
@@ -734,7 +731,7 @@ video {
 
 .metric-row div {
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 14px;
   background: rgba(0,0,0,0.12);
 }
@@ -756,14 +753,14 @@ video {
 }
 
 .chat-block {
-  min-height: 380px;
+  min-height: 320px;
 }
 
 .chat-log {
   display: flex;
   flex-direction: column;
   gap: 9px;
-  height: 250px;
+  height: 210px;
   overflow: auto;
   padding-right: 4px;
 }
@@ -771,7 +768,7 @@ video {
 .system-message,
 .message {
   margin: 0;
-  border-radius: 14px;
+  border-radius: 10px;
   padding: 10px 12px;
   line-height: 1.42;
   font-size: 14px;
@@ -809,7 +806,7 @@ video {
 .report-dialog select {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 10px;
   background: rgba(0,0,0,0.18);
   color: var(--text);
   padding: 0 13px;
@@ -822,7 +819,7 @@ video {
 .icon-submit {
   display: grid;
   place-items: center;
-  border-radius: 14px;
+  border-radius: 10px;
   background: rgba(103,228,255,0.14);
   color: var(--cyan);
 }
@@ -934,10 +931,13 @@ video {
 
   .platform-layout {
     width: min(100% - 24px, 760px);
+    height: auto;
   }
 
   .side-panel {
     grid-template-columns: 1fr;
+    max-height: none;
+    overflow: visible;
   }
 }
 
@@ -1046,5 +1046,125 @@ video {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+}
+
+/* ERMI compact pass */
+.app-shell {
+  overflow: hidden;
+  background: #0f0718;
+}
+
+.app-header {
+  width: min(1320px, calc(100% - 32px));
+  padding: 14px 0;
+}
+
+.platform-layout {
+  width: min(1320px, calc(100% - 32px));
+  height: calc(100dvh - 74px);
+  gap: 14px;
+  padding: 0 0 14px;
+}
+
+.video-board,
+.panel-block,
+.status-pill,
+.local-frame,
+.control-button,
+.tag-button,
+.metric-row div,
+.chat-form input,
+.icon-submit {
+  border-radius: 10px;
+}
+
+.video-board {
+  border-color: rgba(232, 218, 255, 0.12);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.26);
+}
+
+.remote-frame,
+.video-board {
+  min-height: 0;
+}
+
+.empty-video {
+  z-index: 2;
+  background: rgba(17, 8, 27, 0.9);
+}
+
+.video-frame.has-stream .empty-video {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.video-frame.has-stream video {
+  position: relative;
+  z-index: 1;
+}
+
+.local-frame {
+  width: min(210px, 24%);
+  right: 16px;
+  bottom: 16px;
+}
+
+.call-controls {
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.control-button {
+  min-height: 52px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.control-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.control-button span {
+  font-size: 13px;
+  color: currentColor;
+}
+
+.control-button.connect {
+  background: #7e4ee4;
+}
+
+.control-button.next {
+  background: rgba(93, 142, 213, 0.16);
+}
+
+.control-button.warning {
+  background: rgba(179, 130, 72, 0.14);
+}
+
+.control-button.danger {
+  background: rgba(172, 54, 84, 0.17);
+}
+
+.side-panel {
+  gap: 12px;
+}
+
+.panel-block {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+@media (max-width: 980px) {
+  .app-shell {
+    overflow: auto;
+  }
+
+  .platform-layout {
+    height: auto;
   }
 }
