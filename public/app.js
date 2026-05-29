@@ -18,6 +18,8 @@ const endButton = document.getElementById("endButton");
 const reportButton = document.getElementById("reportButton");
 const localVideo = document.getElementById("localVideo");
 const remoteVideo = document.getElementById("remoteVideo");
+const localFrame = document.getElementById("localFrame");
+const remoteFrame = document.getElementById("remoteFrame");
 const localEmpty = document.getElementById("localEmpty");
 const remoteEmpty = document.getElementById("remoteEmpty");
 const localDot = document.getElementById("localDot");
@@ -130,6 +132,7 @@ async function connectSocket() {
     setStatus("Ищем собеседника", "busy");
     setRemoteState("Поиск", "busy");
     remoteEmpty.hidden = false;
+    remoteFrame.classList.remove("has-stream");
   });
 
   socket.on("matched", ({ roomId: matchedRoomId, isCaller }) => {
@@ -195,6 +198,7 @@ async function connectSocket() {
     stopConnectionTimer();
     remoteVideo.srcObject = null;
     remoteEmpty.hidden = false;
+    remoteFrame.classList.remove("has-stream");
     nextButton.disabled = false;
     reportButton.disabled = true;
     setRemoteState("Собеседник вышел", "muted");
@@ -217,6 +221,7 @@ async function startCamera() {
 
   localVideo.srcObject = localStream;
   localEmpty.hidden = true;
+  localFrame.classList.add("has-stream");
   localDot.className = "live-dot";
   toggleMicButton.disabled = false;
   toggleCameraButton.disabled = false;
@@ -230,6 +235,7 @@ function stopCamera() {
   localStream = null;
   localVideo.srcObject = null;
   localEmpty.hidden = false;
+  localFrame.classList.remove("has-stream");
   localDot.className = "live-dot muted";
   toggleMicButton.disabled = true;
   toggleCameraButton.disabled = true;
@@ -251,6 +257,7 @@ function createPeerConnection() {
     stopConnectionTimer();
     remoteVideo.srcObject = event.streams[0];
     remoteEmpty.hidden = true;
+    remoteFrame.classList.add("has-stream");
     nextButton.disabled = false;
     reportButton.disabled = false;
     endButton.disabled = false;
@@ -349,6 +356,7 @@ function nextPartner() {
   cleanupPeer();
   remoteVideo.srcObject = null;
   remoteEmpty.hidden = false;
+  remoteFrame.classList.remove("has-stream");
   roomId = null;
   addSystemMessage("Переходим к следующему собеседнику.");
   findPartner().catch((error) => {
@@ -364,6 +372,7 @@ function endCall({ stopMedia = true } = {}) {
   isMatching = false;
   remoteVideo.srcObject = null;
   remoteEmpty.hidden = false;
+  remoteFrame.classList.remove("has-stream");
   connectButton.disabled = false;
   connectButton.querySelector("span").textContent = "Начать";
   nextButton.disabled = true;
@@ -456,6 +465,7 @@ function toggleTrack(kind) {
     });
     toggleCameraButton.classList.toggle("is-off", !cameraEnabled);
     localEmpty.hidden = cameraEnabled;
+    localFrame.classList.toggle("has-stream", cameraEnabled);
     toggleCameraButton.querySelector("span").textContent = cameraEnabled ? "Камера" : "Камера выкл.";
   }
 }

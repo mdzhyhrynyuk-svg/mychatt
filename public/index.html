@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#14071f" />
     <title>ERMI</title>
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/styles.css?v=4" />
   </head>
   <body>
     <div class="noise" aria-hidden="true"></div>
@@ -126,7 +126,7 @@
       <main class="platform-layout">
         <section class="stage" aria-label="Видеозвонок">
           <div class="video-board">
-            <div class="remote-frame video-frame">
+            <div class="remote-frame video-frame" id="remoteFrame">
               <video id="remoteVideo" autoplay playsinline></video>
               <div class="empty-video" id="remoteEmpty">
                 <span class="radar"></span>
@@ -139,7 +139,7 @@
               </div>
             </div>
 
-            <div class="local-frame video-frame">
+            <div class="local-frame video-frame" id="localFrame">
               <video id="localVideo" autoplay muted playsinline></video>
               <div class="empty-video compact-empty" id="localEmpty">
                 <strong>Превью камеры</strong>
@@ -290,6 +290,6 @@
     </dialog>
 
     <script src="/config.js"></script>
-    <script src="/app.js"></script>
+    <script src="/app.js?v=4"></script>
   </body>
 </html>
