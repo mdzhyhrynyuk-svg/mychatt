@@ -1,3 +1,4 @@
+// ERMI v7: remote video visibility and stream handling.
 const localHostnames = new Set(["localhost", "127.0.0.1"]);
 const defaultSignalServer = localHostnames.has(location.hostname)
   ? location.origin
@@ -40,6 +41,7 @@ const submitReportButton = document.getElementById("submitReportButton");
 
 let socket = null;
 let localStream = null;
+let remoteStream = null;
 let peerConnection = null;
 let roomId = null;
 let micEnabled = true;
@@ -131,8 +133,7 @@ async function connectSocket() {
     queueCount.textContent = String(waiting);
     setStatus("Ищем собеседника", "busy");
     setRemoteState("Поиск", "busy");
-    remoteEmpty.hidden = false;
-    remoteFrame.classList.remove("has-stream");
+    hideRemoteVideo();
   });
 
   socket.on("matched", ({ roomId: matchedRoomId, isCaller }) => {
@@ -196,9 +197,7 @@ async function connectSocket() {
 
   socket.on("peer-left", () => {
     stopConnectionTimer();
-    remoteVideo.srcObject = null;
-    remoteEmpty.hidden = false;
-    remoteFrame.classList.remove("has-stream");
+    hideRemoteVideo();
     nextButton.disabled = false;
     reportButton.disabled = true;
     setRemoteState("Собеседник вышел", "muted");
@@ -220,6 +219,7 @@ async function startCamera() {
   });
 
   localVideo.srcObject = localStream;
+  await localVideo.play().catch(() => {});
   localEmpty.hidden = true;
   localFrame.classList.add("has-stream");
   localDot.className = "live-dot";
@@ -248,6 +248,8 @@ function createPeerConnection() {
     iceServers,
     iceCandidatePoolSize: 10
   });
+  remoteStream = new MediaStream();
+  remoteVideo.srcObject = remoteStream;
 
   localStream.getTracks().forEach((track) => {
     peerConnection.addTrack(track, localStream);
@@ -255,9 +257,17 @@ function createPeerConnection() {
 
   peerConnection.ontrack = (event) => {
     stopConnectionTimer();
-    remoteVideo.srcObject = event.streams[0];
-    remoteEmpty.hidden = true;
-    remoteFrame.classList.add("has-stream");
+
+    if (event.streams?.[0]) {
+      remoteStream = event.streams[0];
+      remoteVideo.srcObject = remoteStream;
+    } else if (remoteStream && !remoteStream.getTracks().includes(event.track)) {
+      remoteStream.addTrack(event.track);
+      remoteVideo.srcObject = remoteStream;
+    }
+
+    event.track.onunmute = showRemoteVideo;
+    showRemoteVideo();
     nextButton.disabled = false;
     reportButton.disabled = false;
     endButton.disabled = false;
@@ -290,6 +300,22 @@ function createPeerConnection() {
       handleConnectionProblem("Связь не прошла. Нажми “Дальше” или попробуй другую сеть.");
     }
   };
+}
+
+function showRemoteVideo() {
+  remoteEmpty.hidden = true;
+  remoteFrame.classList.add("has-stream");
+  requestAnimationFrame(() => {
+    remoteVideo.play().catch(() => {});
+  });
+}
+
+function hideRemoteVideo() {
+  remoteVideo.pause();
+  remoteVideo.srcObject = null;
+  remoteStream = null;
+  remoteEmpty.hidden = false;
+  remoteFrame.classList.remove("has-stream");
 }
 
 async function flushPendingCandidates() {
@@ -354,9 +380,7 @@ async function findPartner() {
 function nextPartner() {
   socket?.emit("leave-room");
   cleanupPeer();
-  remoteVideo.srcObject = null;
-  remoteEmpty.hidden = false;
-  remoteFrame.classList.remove("has-stream");
+  hideRemoteVideo();
   roomId = null;
   addSystemMessage("Переходим к следующему собеседнику.");
   findPartner().catch((error) => {
@@ -370,9 +394,7 @@ function endCall({ stopMedia = true } = {}) {
   cleanupPeer();
   roomId = null;
   isMatching = false;
-  remoteVideo.srcObject = null;
-  remoteEmpty.hidden = false;
-  remoteFrame.classList.remove("has-stream");
+  hideRemoteVideo();
   connectButton.disabled = false;
   connectButton.querySelector("span").textContent = "Начать";
   nextButton.disabled = true;
@@ -391,6 +413,7 @@ function endCall({ stopMedia = true } = {}) {
 function cleanupPeer() {
   stopConnectionTimer();
   pendingCandidates = [];
+  remoteStream = null;
   if (!peerConnection) return;
   peerConnection.ontrack = null;
   peerConnection.onicecandidate = null;

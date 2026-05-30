@@ -1,4 +1,4 @@
-/* ERMI v5 compact interface. If GitHub does not show this line, styles.css is old. */
+/* ERMI v7 compact interface. If GitHub does not show this line, styles.css is old. */
 :root {
   color-scheme: dark;
   --bg: #100818;
@@ -545,6 +545,13 @@ video {
   background: #12091b;
 }
 
+#remoteVideo,
+#localVideo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
 .empty-video {
   position: absolute;
   inset: 0;
@@ -1084,13 +1091,16 @@ video {
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.26);
 }
 
-.remote-frame,
 .video-board {
-  min-height: 0;
+  min-height: 420px;
+}
+
+.remote-frame {
+  min-height: 420px;
 }
 
 .empty-video {
-  z-index: 2;
+  z-index: 3;
   background: rgba(17, 8, 27, 0.9);
 }
 
@@ -1101,7 +1111,6 @@ video {
 }
 
 .video-frame.has-stream video {
-  position: relative;
   z-index: 1;
 }
 
@@ -1166,5 +1175,17 @@ video {
 
   .platform-layout {
     height: auto;
+  }
+
+  .video-board,
+  .remote-frame {
+    min-height: 56dvh;
+  }
+}
+
+@media (max-width: 720px) {
+  .video-board,
+  .remote-frame {
+    min-height: 52dvh;
   }
 }
