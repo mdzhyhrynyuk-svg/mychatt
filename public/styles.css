@@ -1,4 +1,4 @@
-/* ERMI v8 - Strataforge-inspired dark system, static HTML implementation. */
+/* ERMI v9 - Strataforge-inspired dark system with animated Background Paths. */
 :root {
   color-scheme: dark;
   --bg: #09090b;
@@ -135,7 +135,7 @@ a:focus-visible {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  opacity: 0.42;
+  opacity: 0.52;
 }
 
 .path-stage-soft {
@@ -144,48 +144,37 @@ a:focus-visible {
 
 .path-field {
   position: absolute;
-  width: min(980px, 80vw);
-  height: min(520px, 70vh);
-  color: rgba(255, 255, 255, 0.42);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.58);
 }
 
 .path-field-left {
-  left: -8vw;
-  top: 6vh;
+  transform: translate3d(-7vw, 1vh, 0) scale(1.36);
+  transform-origin: center;
 }
 
 .path-field-right {
-  right: -10vw;
-  bottom: 2vh;
-  transform: rotate(8deg);
+  transform: translate3d(8vw, -2vh, 0) scale(1.28) rotate(180deg);
+  transform-origin: center;
 }
 
 .path-field path {
   stroke: currentColor;
-  stroke-width: 0.8;
-  stroke-opacity: 0.22;
+  stroke-width: var(--path-width, 0.8);
+  stroke-opacity: var(--path-opacity, 0.18);
   stroke-dasharray: 0.3 0.7;
-  animation: pathDrift 18s linear infinite;
+  stroke-dashoffset: 0;
+  vector-effect: non-scaling-stroke;
+  animation:
+    pathFlow var(--path-duration, 24s) linear infinite,
+    pathPulse var(--path-pulse, 8s) ease-in-out infinite;
+  animation-delay: var(--path-delay, 0s);
 }
 
-.path-field path:nth-child(2) {
-  animation-duration: 22s;
-  stroke-opacity: 0.18;
-}
-
-.path-field path:nth-child(3) {
-  animation-duration: 26s;
-  stroke-opacity: 0.14;
-}
-
-.path-field path:nth-child(4) {
-  animation-duration: 30s;
-  stroke-opacity: 0.1;
-}
-
-.path-field path:nth-child(5) {
-  animation-duration: 34s;
-  stroke-opacity: 0.08;
+.path-field-right path {
+  animation-direction: reverse, normal;
 }
 
 .site-header,
@@ -1273,12 +1262,21 @@ video {
   }
 }
 
-@keyframes pathDrift {
+@keyframes pathFlow {
   from {
     stroke-dashoffset: 0;
   }
   to {
     stroke-dashoffset: -1;
+  }
+}
+
+@keyframes pathPulse {
+  0%, 100% {
+    opacity: 0.32;
+  }
+  50% {
+    opacity: 0.76;
   }
 }
 

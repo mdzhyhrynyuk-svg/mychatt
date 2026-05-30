@@ -1,4 +1,4 @@
-// ERMI v8: separate landing and platform pages with resilient WebRTC handling.
+// ERMI v9: separate pages, resilient WebRTC, and animated Background Paths.
 const localHostnames = new Set(["localhost", "127.0.0.1"]);
 const defaultSignalServer = localHostnames.has(location.hostname)
   ? location.origin
@@ -52,6 +52,42 @@ const iceServers = window.ERMI_ICE_SERVERS || [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" }
 ];
+
+function initBackgroundPaths() {
+  const fields = document.querySelectorAll("[data-floating-paths]");
+  if (!fields.length) return;
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const namespace = "http://www.w3.org/2000/svg";
+
+  fields.forEach((svg) => {
+    const position = Number(svg.dataset.floatingPaths || 1);
+    const title = svg.querySelector("title");
+    svg.replaceChildren();
+    if (title) svg.appendChild(title);
+
+    Array.from({ length: 36 }, (_, index) => {
+      const path = document.createElementNS(namespace, "path");
+      const d = `M-${380 - index * 5 * position} -${189 + index * 6}C-${
+        380 - index * 5 * position
+      } -${189 + index * 6} -${312 - index * 5 * position} ${216 - index * 6} ${
+        152 - index * 5 * position
+      } ${343 - index * 6}C${616 - index * 5 * position} ${470 - index * 6} ${
+        684 - index * 5 * position
+      } ${875 - index * 6} ${684 - index * 5 * position} ${875 - index * 6}`;
+
+      path.setAttribute("d", d);
+      path.setAttribute("fill", "none");
+      path.setAttribute("pathLength", "1");
+      path.style.setProperty("--path-width", String(0.5 + index * 0.03));
+      path.style.setProperty("--path-opacity", String(Math.min(0.1 + index * 0.022, 0.58)));
+      path.style.setProperty("--path-duration", `${20 + (index % 9) * 1.4}s`);
+      path.style.setProperty("--path-pulse", `${7 + (index % 6) * 0.8}s`);
+      path.style.setProperty("--path-delay", reducedMotion ? "0s" : `${index * -0.35}s`);
+      svg.appendChild(path);
+    });
+  });
+}
 
 function setButtonText(button, text) {
   const label = button?.querySelector("span");
@@ -559,3 +595,5 @@ function initPlatform() {
 if (isPlatformPage) {
   initPlatform();
 }
+
+initBackgroundPaths();
