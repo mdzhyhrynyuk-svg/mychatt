@@ -1,4 +1,4 @@
-// ERMI v9: separate pages, resilient WebRTC, and animated Background Paths.
+// ERMI v10: separate pages, resilient WebRTC, and stable animated Background Paths.
 const localHostnames = new Set(["localhost", "127.0.0.1"]);
 const defaultSignalServer = localHostnames.has(location.hostname)
   ? location.origin
@@ -61,10 +61,14 @@ function initBackgroundPaths() {
   const namespace = "http://www.w3.org/2000/svg";
 
   fields.forEach((svg) => {
+    if (svg.dataset.pathsReady === "true") return;
+
     const position = Number(svg.dataset.floatingPaths || 1);
     const title = svg.querySelector("title");
     svg.replaceChildren();
     if (title) svg.appendChild(title);
+    svg.setAttribute("preserveAspectRatio", "xMidYMid slice");
+    svg.dataset.pathsReady = "true";
 
     Array.from({ length: 36 }, (_, index) => {
       const path = document.createElementNS(namespace, "path");
@@ -80,9 +84,9 @@ function initBackgroundPaths() {
       path.setAttribute("fill", "none");
       path.setAttribute("pathLength", "1");
       path.style.setProperty("--path-width", String(0.5 + index * 0.03));
-      path.style.setProperty("--path-opacity", String(Math.min(0.1 + index * 0.022, 0.58)));
-      path.style.setProperty("--path-duration", `${20 + (index % 9) * 1.4}s`);
-      path.style.setProperty("--path-pulse", `${7 + (index % 6) * 0.8}s`);
+      path.style.setProperty("--path-opacity", String(Math.min(0.08 + index * 0.019, 0.5)));
+      path.style.setProperty("--path-duration", `${26 + (index % 9) * 1.65}s`);
+      path.style.setProperty("--path-pulse", `${9 + (index % 6) * 0.85}s`);
       path.style.setProperty("--path-delay", reducedMotion ? "0s" : `${index * -0.35}s`);
       svg.appendChild(path);
     });
