@@ -129,12 +129,12 @@ function loadScript(src) {
 
 async function ensureSocketClient() {
   if (window.io) return;
+  await loadScript("https://cdn.socket.io/4.7.5/socket.io.min.js");
+}
 
-  if (!defaultSignalServer) {
-    throw new Error("Signal server is missing in public/config.js.");
-  }
-
-  await loadScript(`${defaultSignalServer}/socket.io/socket.io.js`);
+function warmUpServer() {
+  if (!defaultSignalServer || localHostnames.has(location.hostname)) return;
+  fetch(`${defaultSignalServer}/health`, { mode: "cors" }).catch(() => {});
 }
 
 async function connectSocket() {
@@ -597,6 +597,7 @@ function initPlatform() {
 }
 
 if (isPlatformPage) {
+  warmUpServer();
   initPlatform();
 }
 
