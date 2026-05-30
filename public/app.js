@@ -1,43 +1,40 @@
-// ERMI v7: remote video visibility and stream handling.
+// ERMI v8: separate landing and platform pages with resilient WebRTC handling.
 const localHostnames = new Set(["localhost", "127.0.0.1"]);
 const defaultSignalServer = localHostnames.has(location.hostname)
   ? location.origin
   : window.ERMI_SIGNAL_SERVER || window.ARMY_CHAT_SIGNAL_SERVER;
 
-const landingView = document.getElementById("landingView");
-const appView = document.getElementById("appView");
-const heroStartButton = document.getElementById("heroStartButton");
-const topStartButton = document.getElementById("topStartButton");
-const previewButton = document.getElementById("previewButton");
-const backHomeButton = document.getElementById("backHomeButton");
-const enableMediaButton = document.getElementById("enableMediaButton");
-const connectButton = document.getElementById("connectButton");
-const nextButton = document.getElementById("nextButton");
-const toggleMicButton = document.getElementById("toggleMicButton");
-const toggleCameraButton = document.getElementById("toggleCameraButton");
-const endButton = document.getElementById("endButton");
-const reportButton = document.getElementById("reportButton");
-const localVideo = document.getElementById("localVideo");
-const remoteVideo = document.getElementById("remoteVideo");
-const localFrame = document.getElementById("localFrame");
-const remoteFrame = document.getElementById("remoteFrame");
-const localEmpty = document.getElementById("localEmpty");
-const remoteEmpty = document.getElementById("remoteEmpty");
-const localDot = document.getElementById("localDot");
-const remoteDot = document.getElementById("remoteDot");
-const remoteLabel = document.getElementById("remoteLabel");
-const statusPill = document.getElementById("statusPill");
-const statusText = document.getElementById("statusText");
-const tagGrid = document.getElementById("tagGrid");
-const queueCount = document.getElementById("queueCount");
-const roomMeta = document.getElementById("roomMeta");
-const pingState = document.getElementById("pingState");
-const chatForm = document.getElementById("chatForm");
-const chatLog = document.getElementById("chatLog");
-const messageInput = document.getElementById("messageInput");
-const reportDialog = document.getElementById("reportDialog");
-const reportReason = document.getElementById("reportReason");
-const submitReportButton = document.getElementById("submitReportButton");
+const byId = (id) => document.getElementById(id);
+
+const enableMediaButton = byId("enableMediaButton");
+const connectButton = byId("connectButton");
+const nextButton = byId("nextButton");
+const toggleMicButton = byId("toggleMicButton");
+const toggleCameraButton = byId("toggleCameraButton");
+const endButton = byId("endButton");
+const reportButton = byId("reportButton");
+const localVideo = byId("localVideo");
+const remoteVideo = byId("remoteVideo");
+const localFrame = byId("localFrame");
+const remoteFrame = byId("remoteFrame");
+const localEmpty = byId("localEmpty");
+const remoteEmpty = byId("remoteEmpty");
+const localDot = byId("localDot");
+const remoteDot = byId("remoteDot");
+const remoteLabel = byId("remoteLabel");
+const statusPill = byId("statusPill");
+const statusText = byId("statusText");
+const queueCount = byId("queueCount");
+const roomMeta = byId("roomMeta");
+const pingState = byId("pingState");
+const chatForm = byId("chatForm");
+const chatLog = byId("chatLog");
+const messageInput = byId("messageInput");
+const reportDialog = byId("reportDialog");
+const reportReason = byId("reportReason");
+const submitReportButton = byId("submitReportButton");
+
+const isPlatformPage = Boolean(connectButton && localVideo && remoteVideo);
 
 let socket = null;
 let localStream = null;
@@ -46,7 +43,7 @@ let peerConnection = null;
 let roomId = null;
 let micEnabled = true;
 let cameraEnabled = true;
-let selectedTags = new Set(["music"]);
+let selectedTags = new Set(["global"]);
 let isMatching = false;
 let connectionTimer = null;
 let pendingCandidates = [];
@@ -56,27 +53,22 @@ const iceServers = window.ERMI_ICE_SERVERS || [
   { urls: "stun:stun1.l.google.com:19302" }
 ];
 
+function setButtonText(button, text) {
+  const label = button?.querySelector("span");
+  if (label) label.textContent = text;
+}
+
 function setStatus(text, tone = "muted") {
+  if (!statusText || !statusPill) return;
   statusText.textContent = text;
   const dot = statusPill.querySelector(".live-dot");
-  dot.className = `live-dot ${tone}`;
+  if (dot) dot.className = `live-dot ${tone}`;
 }
 
 function setRemoteState(label, tone = "muted") {
+  if (!remoteLabel || !remoteDot) return;
   remoteLabel.textContent = label;
   remoteDot.className = `live-dot ${tone}`;
-}
-
-function showPlatform() {
-  landingView.hidden = true;
-  appView.hidden = false;
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function showLanding() {
-  appView.hidden = true;
-  landingView.hidden = false;
-  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function loadScript(src) {
@@ -90,7 +82,7 @@ function loadScript(src) {
     const script = document.createElement("script");
     script.src = src;
     script.onload = resolve;
-    script.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
+    script.onerror = () => reject(new Error(`Could not load ${src}`));
     document.head.appendChild(script);
   });
 }
@@ -99,7 +91,7 @@ async function ensureSocketClient() {
   if (window.io) return;
 
   if (!defaultSignalServer) {
-    throw new Error("Не задан адрес signaling-сервера в public/config.js.");
+    throw new Error("Signal server is missing in public/config.js.");
   }
 
   await loadScript(`${defaultSignalServer}/socket.io/socket.io.js`);
@@ -115,13 +107,13 @@ async function connectSocket() {
   });
 
   socket.on("connect", () => {
-    setStatus("Сервер ERMI подключен", "");
+    setStatus("ERMI server connected", "");
   });
 
   socket.on("connect_error", (error) => {
     connectButton.disabled = false;
     endButton.disabled = true;
-    setStatus(`Ошибка сервера: ${error.message}`, "danger");
+    setStatus(`Server error: ${error.message}`, "danger");
   });
 
   socket.on("queue-count", ({ waiting }) => {
@@ -131,8 +123,8 @@ async function connectSocket() {
   socket.on("waiting", ({ waiting }) => {
     isMatching = true;
     queueCount.textContent = String(waiting);
-    setStatus("Ищем собеседника", "busy");
-    setRemoteState("Поиск", "busy");
+    setStatus("Searching for a live partner", "busy");
+    setRemoteState("Searching", "busy");
     hideRemoteVideo();
   });
 
@@ -140,9 +132,9 @@ async function connectSocket() {
     roomId = matchedRoomId;
     isMatching = false;
     roomMeta.textContent = shortRoom(roomId);
-    setStatus("Собеседник найден. Создаем звонок", "busy");
-    setRemoteState("Подключение", "busy");
-    addSystemMessage("Собеседник найден. Начинаем WebRTC-соединение.");
+    setStatus("Partner found. Opening room", "busy");
+    setRemoteState("Connecting", "busy");
+    addSystemMessage("Partner found. Building the WebRTC connection.");
     startConnectionTimer();
 
     if (isCaller) {
@@ -159,7 +151,7 @@ async function connectSocket() {
       await peerConnection.setLocalDescription(answer);
       socket.emit("answer", { roomId, answer });
     } catch (error) {
-      handleConnectionProblem(`Ошибка offer: ${error.message}`);
+      handleConnectionProblem(`Offer error: ${error.message}`);
     }
   });
 
@@ -169,7 +161,7 @@ async function connectSocket() {
       await peerConnection.setRemoteDescription(answer);
       await flushPendingCandidates();
     } catch (error) {
-      handleConnectionProblem(`Ошибка answer: ${error.message}`);
+      handleConnectionProblem(`Answer error: ${error.message}`);
     }
   });
 
@@ -183,7 +175,7 @@ async function connectSocket() {
 
       await peerConnection.addIceCandidate(candidate);
     } catch (error) {
-      handleConnectionProblem(`Ошибка ICE: ${error.message}`);
+      handleConnectionProblem(`ICE error: ${error.message}`);
     }
   });
 
@@ -192,7 +184,7 @@ async function connectSocket() {
   });
 
   socket.on("report-received", () => {
-    addSystemMessage("Жалоба отправлена. Переключаем на следующего собеседника.");
+    addSystemMessage("Report sent. Moving to the next partner.");
   });
 
   socket.on("peer-left", () => {
@@ -200,9 +192,9 @@ async function connectSocket() {
     hideRemoteVideo();
     nextButton.disabled = false;
     reportButton.disabled = true;
-    setRemoteState("Собеседник вышел", "muted");
-    setStatus("Собеседник вышел. Можно нажать Next", "muted");
-    addSystemMessage("Собеседник завершил разговор.");
+    setRemoteState("Partner left", "muted");
+    setStatus("Partner left. Press Next to search again", "muted");
+    addSystemMessage("Partner ended the room.");
   });
 }
 
@@ -210,7 +202,7 @@ async function startCamera() {
   if (localStream) return;
 
   if (!navigator.mediaDevices?.getUserMedia) {
-    throw new Error("Браузер не поддерживает доступ к камере.");
+    throw new Error("This browser does not support camera access.");
   }
 
   localStream = await navigator.mediaDevices.getUserMedia({
@@ -225,7 +217,7 @@ async function startCamera() {
   localDot.className = "live-dot";
   toggleMicButton.disabled = false;
   toggleCameraButton.disabled = false;
-  setStatus("Камера и микрофон включены", "");
+  setStatus("Camera and microphone are on", "");
 }
 
 function stopCamera() {
@@ -271,8 +263,8 @@ function createPeerConnection() {
     nextButton.disabled = false;
     reportButton.disabled = false;
     endButton.disabled = false;
-    setRemoteState("В эфире", "");
-    setStatus("Разговор идет", "");
+    setRemoteState("Live", "");
+    setStatus("Room is live", "");
     pingState.textContent = "P2P";
   };
 
@@ -291,13 +283,13 @@ function createPeerConnection() {
 
     if (state === "connected") {
       stopConnectionTimer();
-      setStatus("Разговор идет", "");
-      setRemoteState("В эфире", "");
+      setStatus("Room is live", "");
+      setRemoteState("Live", "");
       return;
     }
 
     if (state === "failed" || state === "disconnected") {
-      handleConnectionProblem("Связь не прошла. Нажми “Дальше” или попробуй другую сеть.");
+      handleConnectionProblem("Connection failed. Press Next or try another network.");
     }
   };
 }
@@ -311,6 +303,7 @@ function showRemoteVideo() {
 }
 
 function hideRemoteVideo() {
+  if (!remoteVideo) return;
   remoteVideo.pause();
   remoteVideo.srcObject = null;
   remoteStream = null;
@@ -331,13 +324,13 @@ async function flushPendingCandidates() {
 
 function handleConnectionProblem(message) {
   connectButton.disabled = false;
-  connectButton.querySelector("span").textContent = "Начать";
+  setButtonText(connectButton, "Start matching");
   nextButton.disabled = false;
   reportButton.disabled = true;
   stopConnectionTimer();
   setStatus(message, "danger");
-  setRemoteState("Нет связи", "danger");
-  addSystemMessage("Соединение нестабильно. Если тест идет между разными сетями, нужен TURN-сервер.");
+  setRemoteState("No signal", "danger");
+  addSystemMessage("Connection is unstable. If you test across different networks, a TURN server may be needed.");
 }
 
 async function makeOffer() {
@@ -349,16 +342,15 @@ async function makeOffer() {
 }
 
 async function findPartner() {
-  showPlatform();
   connectButton.disabled = true;
-  connectButton.querySelector("span").textContent = "Ищем...";
+  setButtonText(connectButton, "Searching");
 
   try {
     await startCamera();
     await connectSocket();
   } catch (error) {
     connectButton.disabled = false;
-    connectButton.querySelector("span").textContent = "Начать";
+    setButtonText(connectButton, "Start matching");
     endButton.disabled = true;
     throw error;
   }
@@ -372,9 +364,9 @@ async function findPartner() {
   nextButton.disabled = true;
   endButton.disabled = false;
   reportButton.disabled = true;
-  roomMeta.textContent = "поиск";
-  setStatus("Ищем собеседника", "busy");
-  setRemoteState("Поиск", "busy");
+  roomMeta.textContent = "searching";
+  setStatus("Searching for a live partner", "busy");
+  setRemoteState("Searching", "busy");
 }
 
 function nextPartner() {
@@ -382,9 +374,9 @@ function nextPartner() {
   cleanupPeer();
   hideRemoteVideo();
   roomId = null;
-  addSystemMessage("Переходим к следующему собеседнику.");
+  addSystemMessage("Searching for the next partner.");
   findPartner().catch((error) => {
-    setStatus(`Ошибка Next: ${error.message}`, "danger");
+    setStatus(`Next error: ${error.message}`, "danger");
   });
 }
 
@@ -396,14 +388,14 @@ function endCall({ stopMedia = true } = {}) {
   isMatching = false;
   hideRemoteVideo();
   connectButton.disabled = false;
-  connectButton.querySelector("span").textContent = "Начать";
+  setButtonText(connectButton, "Start matching");
   nextButton.disabled = true;
   reportButton.disabled = true;
   endButton.disabled = true;
-  roomMeta.textContent = "не подключено";
+  roomMeta.textContent = "not connected";
   pingState.textContent = "WebRTC";
-  setRemoteState("Ожидание", "muted");
-  setStatus("Звонок завершен", "muted");
+  setRemoteState("Waiting", "muted");
+  setStatus("Room ended", "muted");
 
   if (stopMedia) {
     stopCamera();
@@ -428,12 +420,12 @@ function startConnectionTimer() {
     if (!peerConnection || peerConnection.connectionState === "connected") return;
 
     connectButton.disabled = false;
-    connectButton.querySelector("span").textContent = "Начать";
+    setButtonText(connectButton, "Start matching");
     nextButton.disabled = false;
     reportButton.disabled = true;
-    setStatus("Соединение не установилось. Нажми “Дальше”", "danger");
-    setRemoteState("Нет связи", "danger");
-    addSystemMessage("Соединение не установилось за 18 секунд. Это часто бывает без TURN-сервера.");
+    setStatus("Connection timed out. Press Next", "danger");
+    setRemoteState("No signal", "danger");
+    addSystemMessage("Connection did not open in 18 seconds. This can happen without a TURN server.");
   }, 18000);
 }
 
@@ -444,11 +436,12 @@ function stopConnectionTimer() {
 }
 
 function shortRoom(value) {
-  if (!value) return "не подключено";
+  if (!value) return "not connected";
   return `room ${value.slice(0, 6)}`;
 }
 
 function addSystemMessage(text) {
+  if (!chatLog) return;
   const message = document.createElement("p");
   message.className = "system-message";
   message.textContent = text;
@@ -466,7 +459,7 @@ function addMessage(text, owner) {
 
 function clearChat() {
   chatLog.innerHTML = "";
-  addSystemMessage("Матчинг запущен. Текстовый чат включится после соединения.");
+  addSystemMessage("Matching started. Text chat will work after the room opens.");
 }
 
 function toggleTrack(kind) {
@@ -478,7 +471,7 @@ function toggleTrack(kind) {
       track.enabled = micEnabled;
     });
     toggleMicButton.classList.toggle("is-off", !micEnabled);
-    toggleMicButton.querySelector("span").textContent = micEnabled ? "Микрофон" : "Без звука";
+    setButtonText(toggleMicButton, micEnabled ? "Mic" : "Muted");
   }
 
   if (kind === "video") {
@@ -489,7 +482,7 @@ function toggleTrack(kind) {
     toggleCameraButton.classList.toggle("is-off", !cameraEnabled);
     localEmpty.hidden = cameraEnabled;
     localFrame.classList.toggle("has-stream", cameraEnabled);
-    toggleCameraButton.querySelector("span").textContent = cameraEnabled ? "Камера" : "Камера выкл.";
+    setButtonText(toggleCameraButton, cameraEnabled ? "Cam" : "Off");
   }
 }
 
@@ -508,151 +501,61 @@ function submitReport() {
   nextPartner();
 }
 
-function initTags() {
-  tagGrid.addEventListener("click", (event) => {
-    const button = event.target.closest(".tag-button");
-    if (!button) return;
+function initPlatform() {
+  enableMediaButton.addEventListener("click", () => {
+    startCamera().catch((error) => setStatus(`Camera error: ${error.message}`, "danger"));
+  });
 
-    const tag = button.dataset.tag;
-    if (selectedTags.has(tag)) {
-      selectedTags.delete(tag);
-      button.classList.remove("active");
-    } else {
-      selectedTags.add(tag);
-      button.classList.add("active");
+  connectButton.addEventListener("click", () => {
+    findPartner().catch((error) => setStatus(`Connection error: ${error.message}`, "danger"));
+  });
+
+  nextButton.addEventListener("click", nextPartner);
+  endButton.addEventListener("click", () => endCall());
+  toggleMicButton.addEventListener("click", () => toggleTrack("audio"));
+  toggleCameraButton.addEventListener("click", () => toggleTrack("video"));
+
+  reportButton.addEventListener("click", () => {
+    reportDialog.showModal();
+  });
+
+  submitReportButton.addEventListener("click", submitReport);
+
+  chatForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    if (!socket || !roomId) {
+      addSystemMessage("Connect to a partner first.");
+      return;
     }
 
-    if (selectedTags.size === 0) {
-      selectedTags.add(tag);
-      button.classList.add("active");
+    socket.emit("chat-message", { roomId, message });
+    addMessage(message, "me");
+    messageInput.value = "";
+  });
+
+  document.addEventListener("keydown", (event) => {
+    const isTyping = event.target.matches("input, textarea, select");
+    if (isTyping) return;
+
+    if (event.key === "Escape" && !endButton.disabled) {
+      endCall();
+    }
+
+    if (event.key === "ArrowRight" && !nextButton.disabled) {
+      nextPartner();
     }
   });
+
+  if (new URLSearchParams(location.search).has("start")) {
+    setStatus("Press Start matching to allow camera access", "busy");
+  } else {
+    setStatus("Ready", "muted");
+  }
 }
 
-function initHeroCanvas() {
-  const canvas = document.getElementById("heroCanvas");
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!canvas || reducedMotion) return;
-
-  const context = canvas.getContext("2d");
-  const points = Array.from({ length: 58 }, () => ({
-    x: Math.random(),
-    y: Math.random(),
-    vx: (Math.random() - 0.5) * 0.0005,
-    vy: (Math.random() - 0.5) * 0.0005,
-    radius: 1 + Math.random() * 2.2
-  }));
-
-  function resize() {
-    canvas.width = window.innerWidth * window.devicePixelRatio;
-    canvas.height = window.innerHeight * window.devicePixelRatio;
-  }
-
-  function draw() {
-    const width = canvas.width;
-    const height = canvas.height;
-    context.clearRect(0, 0, width, height);
-
-    points.forEach((point, index) => {
-      point.x += point.vx;
-      point.y += point.vy;
-
-      if (point.x < 0 || point.x > 1) point.vx *= -1;
-      if (point.y < 0 || point.y > 1) point.vy *= -1;
-
-      const x = point.x * width;
-      const y = point.y * height;
-      context.beginPath();
-      context.arc(x, y, point.radius * window.devicePixelRatio, 0, Math.PI * 2);
-      context.fillStyle = index % 3 === 0 ? "rgba(103,228,255,0.52)" : "rgba(141,92,246,0.44)";
-      context.fill();
-
-      for (let next = index + 1; next < points.length; next += 1) {
-        const other = points[next];
-        const otherX = other.x * width;
-        const otherY = other.y * height;
-        const distance = Math.hypot(x - otherX, y - otherY);
-
-        if (distance < 150 * window.devicePixelRatio) {
-          context.beginPath();
-          context.moveTo(x, y);
-          context.lineTo(otherX, otherY);
-          context.strokeStyle = `rgba(185,168,206,${0.14 - distance / (150 * window.devicePixelRatio) * 0.12})`;
-          context.lineWidth = 1;
-          context.stroke();
-        }
-      }
-    });
-
-    requestAnimationFrame(draw);
-  }
-
-  resize();
-  draw();
-  window.addEventListener("resize", resize);
+if (isPlatformPage) {
+  initPlatform();
 }
-
-heroStartButton.addEventListener("click", () => {
-  findPartner().catch((error) => setStatus(`Ошибка запуска: ${error.message}`, "danger"));
-});
-
-topStartButton.addEventListener("click", () => {
-  findPartner().catch((error) => setStatus(`Ошибка запуска: ${error.message}`, "danger"));
-});
-
-previewButton.addEventListener("click", showPlatform);
-backHomeButton.addEventListener("click", () => {
-  endCall();
-  showLanding();
-});
-
-enableMediaButton.addEventListener("click", () => {
-  startCamera().catch((error) => setStatus(`Ошибка камеры: ${error.message}`, "danger"));
-});
-
-connectButton.addEventListener("click", () => {
-  findPartner().catch((error) => setStatus(`Ошибка подключения: ${error.message}`, "danger"));
-});
-
-nextButton.addEventListener("click", nextPartner);
-endButton.addEventListener("click", () => endCall());
-toggleMicButton.addEventListener("click", () => toggleTrack("audio"));
-toggleCameraButton.addEventListener("click", () => toggleTrack("video"));
-
-reportButton.addEventListener("click", () => {
-  reportDialog.showModal();
-});
-
-submitReportButton.addEventListener("click", submitReport);
-
-chatForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const message = messageInput.value.trim();
-  if (!message) return;
-
-  if (!socket || !roomId) {
-    addSystemMessage("Сначала подключись к собеседнику.");
-    return;
-  }
-
-  socket.emit("chat-message", { roomId, message });
-  addMessage(message, "me");
-  messageInput.value = "";
-});
-
-document.addEventListener("keydown", (event) => {
-  const isTyping = event.target.matches("input, textarea, select");
-  if (isTyping) return;
-
-  if (event.key === "Escape" && !endButton.disabled) {
-    endCall();
-  }
-
-  if (event.key === "ArrowRight" && !nextButton.disabled) {
-    nextPartner();
-  }
-});
-
-initTags();
-initHeroCanvas();
-setStatus("Готов к запуску", "muted");
