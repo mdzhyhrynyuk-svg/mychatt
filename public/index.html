@@ -1,18 +1,169 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#09090b" />
-    <meta name="description" content="ERMI is a minimal random video chat platform with camera, microphone, text chat, next, and report controls." />
-    <title>ERMI - Random Video Space</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
-    <script type="module" crossorigin src="/assets/index-CLwQPOyn.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BOx_4oX6.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#08080d" />
+  <meta name="description" content="ERMI — live video rooms with real strangers. Camera, mic, chat, and nothing else." />
+  <title>ERMI — Random Video Space</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300;1,9..144,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./landing.css" />
+</head>
+<body class="landing-page">
+
+  <div class="ambient" aria-hidden="true">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+  </div>
+
+  <div class="path-stage" aria-hidden="true">
+    <svg class="path-field path-field-left" data-floating-paths="1" viewBox="0 0 696 316" fill="none"><title>Background paths</title></svg>
+    <svg class="path-field path-field-right" data-floating-paths="-1" viewBox="0 0 696 316" fill="none"><title>Background paths</title></svg>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="ERMI home">
+      <span class="brand-mark">E</span>
+      <span class="brand-name">ERMI</span>
+    </a>
+    <div class="live-chip" aria-hidden="true">
+      <span class="chip-dot"></span>
+      <span>Live</span>
+    </div>
+    <nav class="site-nav">
+      <a href="#features">Features</a>
+      <a href="#about">About</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn-ghost" href="./platform.html">Sign in</a>
+      <a class="btn-amber" href="./platform.html">Open platform</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-grid">
+
+        <div class="hero-copy anim-up" style="--d:0.05s">
+          <a class="eyebrow-pill" href="./platform.html">
+            <span class="pill-dot"></span>
+            Random video &middot; Live now
+            <span class="pill-arrow">&#8594;</span>
+          </a>
+          <h1 class="hero-h1">
+            Live rooms.<br>
+            Real people.<br>
+            <em>Zero noise.</em>
+          </h1>
+          <p class="hero-sub">
+            ERMI opens straight into a focused video room &mdash; camera,
+            mic, text chat, and one button to move on. Nothing more.
+          </p>
+          <div class="hero-actions">
+            <a class="btn-hero" href="./platform.html">
+              Start matching
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+            </a>
+            <a class="btn-outline" href="./platform.html">Open platform</a>
+          </div>
+        </div>
+
+        <div class="hero-card-wrap anim-up" style="--d:0.22s" aria-hidden="true">
+          <div class="preview-card">
+            <div class="card-bar">
+              <span class="dot dot-r"></span>
+              <span class="dot dot-y"></span>
+              <span class="dot dot-g"></span>
+              <span class="card-bar-title">ERMI &mdash; live room</span>
+              <span class="card-rec">&#9679; REC</span>
+            </div>
+            <div class="card-stage">
+              <div class="card-remote">
+                <div class="radar"></div>
+                <span>Partner appears here</span>
+              </div>
+              <div class="card-self">You</div>
+            </div>
+            <div class="card-toolbar">
+              <span class="tbtn"></span>
+              <span class="tbtn"></span>
+              <span class="tbtn"></span>
+              <span class="tbtn tbtn-main"></span>
+              <span class="tbtn"></span>
+              <span class="tbtn"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats anim-up" style="--d:0.38s">
+        <div class="stat">
+          <strong class="stat-n" data-target="1847">0</strong>
+          <span>online now</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+          <strong class="stat-n" data-target="8293">0</strong>
+          <span>rooms today</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+          <strong class="stat-n" data-target="42651">0</strong>
+          <span>connections made</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="built-with">
+      <span class="built-label">Built with</span>
+      <div class="built-list">
+        <span>WebRTC</span><span>Socket.IO</span><span>Node.js</span><span>Render</span><span>Netlify</span>
+      </div>
+    </div>
+
+    <section class="features" id="features">
+      <div class="features-head">
+        <p class="overline">Experience</p>
+        <h2 class="section-h2">Everything a video room<br>needs. Nothing it doesn&rsquo;t.</h2>
+      </div>
+      <div class="feature-grid">
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M12 3c2.3 2.4 3.4 5.4 3.4 9S14.3 18.6 12 21"/><path d="M12 3C9.7 5.4 8.6 8.4 8.6 12S9.7 18.6 12 21"/></svg></div><h3>Global queue</h3><p>One public matching pool. Join from anywhere, meet anyone.</p></div>
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h7A2.5 2.5 0 0 1 16 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 4 16.5v-9Z"/><path d="m16 10 4-2.5v9L16 14"/></svg></div><h3>P2P video</h3><p>Direct WebRTC connection &mdash; no server relaying your call.</p></div>
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 6v5c0 4.2-2.8 7.7-7 10-4.2-2.3-7-5.8-7-10V6l7-3Z"/><path d="m9 12 2 2 4-5"/></svg></div><h3>Full control</h3><p>Mute, camera off, next, stop, report &mdash; one tap each.</p></div>
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8.5 8.5 0 0 1-8.5 8.5H5l2.1-3.6A8.5 8.5 0 1 1 21 12Z"/><path d="M8 11h8"/><path d="M8 15h5"/></svg></div><h3>Text chat</h3><p>Side chat available the moment audio feels awkward.</p></div>
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5v14l10-7L5 5Z"/><path d="M19 5v14"/></svg></div><h3>Instant next</h3><p>One action ends the room and restarts the search.</p></div>
+        <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h10"/></svg></div><h3>Minimal surface</h3><p>No feeds, no settings panels &mdash; two people in a room.</p></div>
+      </div>
+    </section>
+
+    <section class="cta-section" id="about">
+      <p class="overline">Ready</p>
+      <h2 class="cta-h2">Open ERMI.<br><em>Start a live room.</em></h2>
+      <a class="btn-hero" href="./platform.html">
+        Enter platform
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span class="footer-logo">ERMI</span>
+    <span class="footer-tag">Random video space</span>
+  </footer>
+
+  <script src="./app.js"></script>
+  <script>
+    (function(){
+      function countUp(el,target,ms){
+        var s=performance.now();
+        function tick(n){var p=Math.min((n-s)/ms,1),v=Math.floor((1-Math.pow(1-p,3))*target);el.textContent=v.toLocaleString();if(p<1)requestAnimationFrame(tick);}
+        requestAnimationFrame(tick);
+      }
+      var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){countUp(e.target,+e.target.dataset.target,1600);obs.unobserve(e.target);}});},{threshold:0.5});
+      document.querySelectorAll('.stat-n[data-target]').forEach(function(el){obs.observe(el);});
+    })();
+  </script>
+</body>
 </html>
